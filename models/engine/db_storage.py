@@ -27,8 +27,11 @@ class DBStorage:
         db = getenv("HBNB_MYSQL_DB")
         envv = getenv("HBNB_ENV", "none")
 
+
         self.__engine = create_engine('mysql+mysqldb://{}:{}@{}/{}'.format(
             user, pwd, host, db), pool_pre_ping=True)
+
+        Session = sessionmaker(bind=self.__engine)
 
         if envv == 'test':
             Base.metadata.drop_all(self.__engine)
@@ -38,22 +41,28 @@ class DBStorage:
         Return:
             returns a dictionary of __object
         """
-        the_dict = {}
+        dic = {}
         if cls:
             if type(cls) is str:
                 cls = eval(cls)
-            query = self.__session.query(cls)
-            for elem in query:
-                key = "{}.{}".format(type(elem).__name__, elem.id)
-                the_dict[key] = elem
-        else:
-            lista = [State, City, User, Place, Review, Amenity]
-            for clase in lista:
-                query = self.__session.query(clase)
+            if self.__session is not None:
+                query = self.__session.query(cls)
                 for elem in query:
                     key = "{}.{}".format(type(elem).__name__, elem.id)
-                    the_dict[key] = elem
-        return (the_dict)
+                    dic[key] = elem
+            else:
+                raise Exception("Session is not intialized")
+        else:
+            lista = [State, City, User, Place, Review, Amenity]
+            if self.__session is not None:
+                for clase in lista:
+                    query = self.__session.query(clase)
+                    for elem in query:
+                        key = "{}.{}".format(type(elem).__name__, elem.id)
+                        dic[key] = elem
+            else:
+                raise Exception("Session is not intialized")
+        return (dic)
 
     def new(self, obj):
         """add the object to the current database session"""
