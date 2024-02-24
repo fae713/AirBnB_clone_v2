@@ -124,8 +124,11 @@ class HBNBCommand(cmd.Cmd):
             print("** class name missing **")
             return
 
-        if args[0] not in HBNBCommand.classes:
-            print("** class doesn't exist **")
+        class_name = args[0]
+        class_ = HBNBCommand.classes.get(class_name)
+
+        if not class_:
+            print(f"** class '{class_name}' doesn't exist **")
             return
 
         kwargs = dict()
@@ -142,7 +145,7 @@ class HBNBCommand(cmd.Cmd):
                     value = int(value)
                 kwargs[name] = value
 
-        new_instance = HBNBCommand.classes[args[0]]()
+        new_instance = class_()
         for attrName, attrValue in kwargs.items():
             setattr(new_instance, attrName, attrValue)
 
